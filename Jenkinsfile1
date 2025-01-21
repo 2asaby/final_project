@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "final_project:latest"
+        DOCKER_REPO = "2asaby/final_project"
+        DOCKER_CREDENTIALS_ID = "dockerhub-mylab" // Update with your Jenkins credentials ID for Docker Hub
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out the source code...'
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building the Docker image...'
+                script {
+                    docker.build("${DOCKER_IMAGE}", ".")
+                }
+            }
+        }
+
+        stage('Run Unit Tests') {
+            steps {
+                echo 'Running unit tests in the Docker container...'
+                script {
+                    docker.image("${DOCKER_IMAGE}").inside {
+                        sh 'mvn test'
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                echo 'Pushing Docker image to Docker Hub...'
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDENTIALS_ID}") {
+                        docker.image("${DOCKER_IMAGE}").push('latest')
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                echo 'Deploying the application...'
+                script {
+                    sh '''
+                    docker stop final_project || true
+                    docker rm final_project || true
+                    docker run -d --name final_project -p 8080:8080 ${DOCKER_REPO}:latest
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
