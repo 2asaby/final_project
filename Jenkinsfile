@@ -17,10 +17,10 @@ pipeline {
             steps {
                 script {
                     echo 'Building and pushing to Docker hub'
-                    docker.build("2asaby/devops:jenkins-test1")
+                    docker.build("2asaby/final_project:jenkins-test")
 
                     docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-mylab') {
-                        docker.image("2asaby/devops:jenkins-test1").push()
+                        docker.image("2asaby/final_project:jenkins-test").push()
                     }
                 }
             }        
