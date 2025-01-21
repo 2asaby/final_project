@@ -28,7 +28,8 @@ pipeline {
             steps {
                 echo 'Running unit tests in the Docker container...'
                 script {
-                    docker.image("${DOCKER_IMAGE}").inside {
+                    // Use Maven Docker image to run tests
+                    docker.image('maven:3.8.5-openjdk-17').inside {
                         sh 'mvn test'
                     }
                 }
