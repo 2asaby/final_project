@@ -1,5 +1,10 @@
 pipeline {
     agent any
+    environment {
+        DOCKER_IMAGE = "final_project:latest"
+        DOCKER_REPO = "2asaby/final_project"
+        DOCKER_CREDENTIALS_ID = "dockerhub-mylab" // Update with your Jenkins credentials ID for Docker Hub
+    }
     stages {
         stage('Build') {
             steps {
