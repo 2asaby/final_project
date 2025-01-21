@@ -4,6 +4,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the Java application'
+                sh 'chmod +x ./mvnw'
                 sh './mvnw clean package'
             }
         }
