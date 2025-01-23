@@ -13,11 +13,17 @@
         state: started
         enabled: true
 
+    - name: Check if Docker image is already pulled
+      community.docker.docker_image_info:
+        name: 2asaby/final_project:latest
+      register: docker_image_info
+
     - name: Pull Docker image
       community.docker.docker_image:
         name: 2asaby/final_project
         tag: latest
         source: pull
+      when: docker_image_info.images is not defined or docker_image_info.images | length == 0
 
     - name: Run a Docker container
       community.docker.docker_container:
