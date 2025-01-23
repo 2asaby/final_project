@@ -1,0 +1,2 @@
+ubuntu_machine ansible_host=ubuntu22 ansible_connection=ssh ansible_user=ansible ansible_ssh_pass=p@ssw0rd
+

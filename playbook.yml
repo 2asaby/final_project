@@ -1,0 +1,29 @@
+- name: Run a Docker container
+  hosts: all  # Change to a specific host or group if needed
+  become: true
+  tasks:
+    - name: Ensure Docker is installed
+      package:
+        name: docker
+        state: present
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Pull Docker image
+      community.docker.docker_image:
+        name: 2asaby/final_project
+        tag: latest
+        source: pull
+
+    - name: Run a Docker container
+      community.docker.docker_container:
+        name: final_project_ansible
+        image: 2asaby/final_project:latest
+        state: started
+        ports:
+          - "8080:8080"
+        restart_policy: always
