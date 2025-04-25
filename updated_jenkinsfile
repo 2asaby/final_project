@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "2asaby/final_project:${env.BUILD_ID}"
+        DOCKER_REPO = "2asaby/final_project"
+        DOCKER_CREDENTIALS_ID = "dockerhub-mylab"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out the source code...'
+                checkout scm
+            }
+        }
+
+        stage('Build & Push Docker Image') {
+            steps {
+                echo 'Checking if Docker image needs to be built...'
+                script {
+                    def imageExists = sh(
+                        script: "curl --silent -f https://hub.docker.com/v2/repositories/${DOCKER_REPO}/tags/${BUILD_ID}/",
+                        returnStatus: true
+                    ) == 0
+
+                    if (!imageExists) {
+                        echo "Building and pushing new image..."
+                        def img = docker.build("${DOCKER_IMAGE}", ".")
+                        docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDENTIALS_ID}") {
+                            img.push()
+                            img.push("latest") // optional: tag latest
+                        }
+                    } else {
+                        echo "Image already exists. Skipping build."
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                echo 'Deploying the application...'
+                script {
+                    sh '''
+                    docker stop final_project || true
+                    docker rm final_project || true
+                    docker run -d --name final_project -p 9090:9090 ${DOCKER_REPO}:${BUILD_ID}
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
