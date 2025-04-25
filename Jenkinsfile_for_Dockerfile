@@ -44,7 +44,7 @@ pipeline {
                     sh '''
                     docker stop final_project || true
                     docker rm final_project || true
-                    docker run -d --name final_project -p 8080:8080 ${DOCKER_REPO}:latest
+                    docker run -d --name final_project -p 8080:8080 ${DOCKER_IMAGE}
                     '''
                 }
             }
